@@ -1,7 +1,7 @@
 package cinema.actor
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props, Status}
-import akka.testkit.{TestKit, TestProbe}
+import akka.testkit.{TestActors, TestKit, TestProbe}
 import cinema.Generators
 import org.scalatest.{Matchers, WordSpecLike}
 import cinema.exception.{MovieAlreadyExistsException, UnknownMovieException}
@@ -13,17 +13,11 @@ import cinema.util.GeneratorUtils._
   */
 class MoviesManagerSpec extends TestKit(ActorSystem()) with WordSpecLike with Matchers  {
 
-  def forwarderProps(actor: ActorRef): Props = Props(new Actor {
-    override def receive: Receive = {
-      case e => actor.forward(e)
-    }
-  })
-
   trait Context {
     val probe = TestProbe()
     implicit val sender: ActorRef = probe.ref
 
-    val manager: ActorRef = system.actorOf(MoviesManager.props(forwarderProps(probe.ref)))
+    val manager: ActorRef = system.actorOf(MoviesManager.props(TestActors.forwardActorProps(probe.ref)))
   }
 
   "MoviesManager" should {
